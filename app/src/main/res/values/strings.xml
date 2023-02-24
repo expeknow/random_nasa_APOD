@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">APOD Nasa</string>
+    <string name="next_image">Next Image</string>
+    <string name="download">Download Image</string>
+    <string name="loading_detail">Fetching Details…</string>
+    <string name="loading_title">Fetching Title…</string>
+
+
+</resources>
