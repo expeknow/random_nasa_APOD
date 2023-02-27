@@ -42,6 +42,10 @@ import org.json.JSONArray;
 
 public class MainActivity extends AppCompatActivity {
     JSONArray jsonArray;
+
+    Boolean SwipeLeft = true;
+    Boolean SwipeRight = false;
+
     TextView title;
     TextView details;
     Button next_btn;
@@ -78,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
          */
         cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        next_btn.setOnClickListener(view -> getData());
+        next_btn.setOnClickListener(view -> getData(SwipeLeft));
 
         download_btn.setOnClickListener(view -> {
             try {
@@ -89,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        getData();
+        getData(SwipeLeft);
 
         gestureDetector = new GestureDetector(this, new MyGestureListener());
 
@@ -113,8 +117,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                getData();
+                getData(SwipeLeft);
                 return true;
+            }
+            else if(e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY){
+                getData(SwipeRight);
             }
             return false;
         }
@@ -164,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void getData() {
+    private void getData(Boolean swipeDirection) {
 
         if(isNotConnected()){
             Toast.makeText(getApplicationContext(), "No Internet Connection. Please check internet connectivity", Toast.LENGTH_SHORT).show();
@@ -175,13 +182,22 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if(jsonArray!=null && index < jsonArray.length() && index != -1){
+        if(jsonArray!=null && index < jsonArray.length()-1){
+            if(swipeDirection == SwipeLeft){
+                index++;
+            }else if(swipeDirection == SwipeRight && index > 0){
+                index--;
+            }else{
+                Toast.makeText(this, "No image present before this image!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             try {
                 data = jsonArray.getJSONObject(index);
             } catch (JSONException e){
                 e.printStackTrace();
             }
-            index++;
+
             setDataOnScreen();
             return;
         }
@@ -201,9 +217,16 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(String response) {
 
                 try {
-                    index = 0;
-                    jsonArray = new JSONArray(response);
-                    data = jsonArray.getJSONObject(index);
+                    JSONArray newJsonArray = new JSONArray(response);
+                    if(jsonArray == null){
+                        jsonArray = newJsonArray;
+                    }else{
+                        for(int i=0; i<newJsonArray.length(); i++){
+                            jsonArray.put(newJsonArray.get(i));
+                        }
+                    }
+
+                    data = jsonArray.getJSONObject(index > -1 ? index : ++index);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
