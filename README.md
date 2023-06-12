@@ -1,4 +1,5 @@
-# random_nasa_APOD
+#Random Nasa APOD
+
 Introducing Random NASA APOD - your gateway to the vast wonders of the universe!
 
 
